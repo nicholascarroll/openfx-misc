@@ -54,13 +54,14 @@ These operations not influence the keying operation; they only affect the alpha 
 #+CAPTION: Garbage matte (source image courtesy of Steve Wright Digital FX).
 [[./garbage.png]]
 
-To make a garbage matte, open the *Matte Postprocess* controls and:
-1. Enable *Invert*.
-2. Raise the *White Point* until you see no noise in the background, then lower the *Black Point* until you have a pure black foreground. You can vary the gamma in your viewer, or use the `Matte Monitor' *Output Mode*, to confirm this.
-3. Use *Fill Holes* if you need to patch any holes in the matte. 
-3. *Erode* the matte to bring the background just clear of the edges of the foreground. Use the wipe mode in your viewer to compare against the original so you can see how far from the edge you are. 
-4. *Blur* the matte to feather out that edge. Don't try to get it perfect yet, because you will make your fine adjustments once you have the whole composite constructed.
-5. Name this INK node `garbage' and attach it to the *Garbage* input of your main INK node, like in Figure 1.
+To make a garbage matte:
+
+1. Add an invert node.
+2. Add a curve node and lower the white point until you see no noise in the background, then raise the black point until you have a pure black foreground. You can vary the gamma in your viewer, or use the `Matte Monitor' Output Mode, to confirm this.
+3. If you need to patch any holes in the matte, you can dilate then erode by the same amount.
+4. Erode the matte to bring the background just clear of the edges of the foreground. Compare against the original so you can see how far from the edge you are.
+5. Blur the matte to feather out that edge. Don't try to get it perfect yet, because you will make your fine adjustments once you have the whole composite constructed.
+6. Name this INK node `garbage' and attach it to the Garbage input of your main INK node, like in Figure 1.
 
 If you need to add a roto shape to your garbage matte, connect it as the *Garbage* input clip /of your garbage matte INK node/. 
 
@@ -68,9 +69,14 @@ If you need to add a roto shape to your garbage matte, connect it as the *Garbag
 #+CAPTION: Core matte.
 [[./core.png]]
 
-To make a core matte, the procedure is the same as for garbage, except you don't enable *Invert*.
+ Wherever you have spill, you will need a core matte. To make a core matte:
 
-If you have spill, you will need a core matte to prevent INK from making a corresponding transparency in the matte. You should also enable *Despill Core*.
+1. Set the viewer to alpha mode. Now raise the Key Amount to 1.5.
+2. With a curve node, lower the white point to make the matte solid (alpha of 1.0).
+3. Compare to the main INK node's matte, and reduce Key Amount until the core matte is just marginally smaller than the main INK node's matte.
+4. Use a dilate and erode to fill holes if you need to, but this can blur your edges, so keep an eye on edges with fine details such as hair.
+5. Ensure Despill Core is enabled.
+
 
 If instead you need a holdout against despill (for example to key a blue eyed actor with a blue screen), disable the option *Despill Core*. Then INK will reduce the *Key Amount* by the core matte density.
 
@@ -84,7 +90,7 @@ If you enable *Despill Core*, you should replace the spill colour that was remov
 *** Finishing Edges
 #+CAPTION: Matte Monitor.
 [[./matte-monitor.png]]
-The edges are where the action is. Use the `Matte Monitor' *Output Mode* to see the full extent of the current matte, the garbage and core mattes, and where they overlap. The idea of a matte monitor is to help you to discriminate edge/transparency from pure background and solid foreground by showing you both the holes in your matte and the background noise at the same time. INK sets any alpha >= 0.00001 or < 0.99999 to 0.5. 
+Use the `Matte Monitor' *Output Mode* to see the full extent of the current matte, the garbage and core mattes, and where they overlap. The idea of a matte monitor is to help you to discriminate edge/transparency from pure background and solid foreground by showing you both the holes in your matte and the background noise at the same time. INK sets any alpha >= 0.00001 or < 0.99999 to 0.5. 
 
 The Matte Monitor shows the current matte in the green channel, the garbage matte in blue and the core matte in red. This produces a colour coding of the mattes:
 
@@ -117,12 +123,7 @@ You can output your INK matte directly into the *Source* of another INK node to 
 In colour difference keying, we make the image pixel's greatest channel (green in the case of greenscreen) less than its middle channel, to remove the key colour. We then need to adjust the proportions of red, green and blue to make the pixel colour what it would have been were the image originally photographed without the key colour present. We can't really know what that desired colour is because it was never captured in the photo. The best we can do is set the greatest channel to the average of the other two channels. As for what value those other two channels should be, we should again stick to the average. So for each channel we incorporate the proportionate difference between each channel of the image pixel and of the *Key Colour*. This is the /proportionate colour difference/ method and it is how INK works. It is because it always resorts to the average that INK is a general purpose keyer.
 
 To illustrate, Equation 1 shows how the least channel's output is calculated. The source pixel's least, middle and greatest channels are named C_0, C_1 and C_2, respectively. Likewise K_0, K_1 and K_2 represent the *Key Colour*'s least, middle and greatest channels. *Key Balance* (defaulting to 0.5) is b. The result is R_0:
-\begin{equation}
-R_0 =
-(C_2-bC_1)\frac{\frac{\frac{C_0}{(C_2-bC_1)} - \frac{K_0}{(K_2-bK_1)}}{1+\frac{C_0}{(C_2-bC_1)}-(2-b)\frac{K_0}{(K_2-bK_1)}}}{1-\frac{\frac{C_0}{(C_2-bC_1)} - \frac{K_0}{(K_2-bK_1)}}{1+\frac{C_0}{(C_2-bC_1)}-(2-b)\frac{K_0}{(K_2-bK_1)}}}  
-\end{equation}
 
-which reduces to:
 \begin{equation}
 R_0 =\frac{(C_2-bC_1)(C_0(K_2-bK_1)-K_0(C_2-bC_1))}{b^2C_1K_1-b^2C_1K_0-bC_1K_2+bC_1K_0+bC_2K_0-bC_2K_1+C_2K_2-C_2K_0}
 \end{equation}
