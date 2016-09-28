@@ -41,15 +41,6 @@ In an imperfect world we find that many shots have unevenly lit background scree
 
 As a convenience, INK has *Garbage* and *Core* inputs. You can make the garbage and core mattes procedurally using INK (or any other keyer), or by drawing an animated rotobezier shape. 
 
-To make a procedural matte in INK, open the *Matte Postprocessing* section to reveal the following controls:
-- *Invert*
-- *Black Point*
-- *White Point*
-- *Fill Holes*
-- *Erode*
-- *Blur*
-These operations not influence the keying operation; they only affect the alpha channel coming out of the INK node. They are purely a convenience for when you are using INK to make garbage and core mattes. *Matte Postprocessing* options DEGRADE the matte, so use them ONLY for making garbage/core mattes.
-
 *** Making the Garbage Matte
 #+CAPTION: Garbage matte (source image courtesy of Steve Wright Digital FX).
 [[./garbage.png]]
